@@ -133,7 +133,6 @@ function calculateTotals() {
   calculateSustainabilityScore();
 }
 
-// Estimate survival days using last 30 days avg daily spend
 function calculateSurvivalDays(balance) {
   const now = Date.now();
   const cutoff = now - 30 * 24 * 60 * 60 * 1000;
@@ -158,7 +157,6 @@ function calculateSurvivalDays(balance) {
   )}.`;
 }
 
-// Sustainability score based on category
 function getSustainWeight(category) {
   if (!category) return 0;
   if (category.includes("Home Cooking")) return 2;
@@ -178,7 +176,7 @@ function calculateSustainabilityScore() {
     return;
   }
 
-  let score = 50; // base
+  let score = 50;
   transactions.forEach((t) => {
     if (t.type === "expense") {
       score += getSustainWeight(t.category);
@@ -189,29 +187,31 @@ function calculateSustainabilityScore() {
   sustainScoreEl.textContent = score.toString();
 
   if (score >= 75) {
-    sustainTextEl.textContent = "Nice! Your spending choices are quite planet-friendly.";
+    sustainTextEl.textContent =
+      "Nice! Your spending choices are quite planet-friendly.";
   } else if (score >= 50) {
     sustainTextEl.textContent =
-      "Decent balance. Small changes in commute and food habits can improve this.";
+      "Decent balance. Small changes can improve this.";
   } else {
     sustainTextEl.textContent =
-      "Try cutting down on deliveries, cabs and flights to improve your sustainability.";
+      "Try reducing deliveries, cabs and flights to improve sustainability.";
   }
 }
 
-// ====== RENDERING TRANSACTIONS ======
+// ====== RENDER TRANSACTIONS ======
 function renderTransactions() {
   transactionListEl.innerHTML = "";
 
   const filtered = transactions.filter((t) => {
     const typeMatch = filterType === "all" || t.type === filterType;
-    const categoryMatch = filterCategory === "all" || t.category === filterCategory;
+    const categoryMatch =
+      filterCategory === "all" || t.category === filterCategory;
     return typeMatch && categoryMatch;
   });
 
   if (!filtered.length) {
     const li = document.createElement("li");
-    li.textContent = "No transactions to show for selected filters.";
+    li.textContent = "No transactions to show.";
     li.classList.add("tiny", "muted");
     transactionListEl.appendChild(li);
     return;
@@ -221,7 +221,6 @@ function renderTransactions() {
     const li = document.createElement("li");
     li.classList.add("transaction-item");
 
-    // Column 1: details
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("transaction-main");
 
@@ -251,12 +250,10 @@ function renderTransactions() {
       mainDiv.appendChild(noteDiv);
     }
 
-    // Column 2: category text
     const col2 = document.createElement("div");
     col2.classList.add("tiny", "muted");
     col2.textContent = t.category;
 
-    // Column 3: amount
     const amountDiv = document.createElement("div");
     const amountSpan = document.createElement("span");
     amountSpan.classList.add("transaction-amount", t.type);
@@ -264,7 +261,6 @@ function renderTransactions() {
     amountSpan.textContent = sign + formatCurrency(t.amount);
     amountDiv.appendChild(amountSpan);
 
-    // Column 4: delete button
     const actionsDiv = document.createElement("div");
     const delBtn = document.createElement("button");
     delBtn.classList.add("btn-delete");
@@ -277,34 +273,31 @@ function renderTransactions() {
         renderTransactions();
       }
     });
-    actionsDiv.appendChild(delBtn);
 
+    actionsDiv.appendChild(delBtn);
     li.appendChild(mainDiv);
     li.appendChild(col2);
     li.appendChild(amountDiv);
     li.appendChild(actionsDiv);
-
     transactionListEl.appendChild(li);
   });
 }
 
-// ====== UPCOMING EXPENSES ======
+// ====== UPCOMING ======
 function renderUpcoming() {
   upcomingListEl.innerHTML = "";
-  if (!upcomingExpenses.length) return;
-
   upcomingExpenses
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .forEach((exp) => {
       const li = document.createElement("li");
-      li.textContent = `${exp.name} • ${formatCurrency(exp.amount)} • ${formatDate(
-        exp.date
-      )}`;
+      li.textContent = `${exp.name} • ${formatCurrency(
+        exp.amount
+      )} • ${formatDate(exp.date)}`;
       upcomingListEl.appendChild(li);
     });
 }
 
-// ====== GOAL / TIME-TO-AFFORD ======
+// ====== GOALS ======
 function handleGoalSubmit(e) {
   e.preventDefault();
 
@@ -314,7 +307,7 @@ function handleGoalSubmit(e) {
   const savedAlready = parseFloat(goalSavedInput.value || "0");
 
   if (!name || isNaN(cost) || cost <= 0 || isNaN(monthly) || monthly <= 0) {
-    alert("Please enter a goal name, cost and monthly saving.");
+    alert("Enter valid goal inputs.");
     return;
   }
 
@@ -331,9 +324,7 @@ function handleGoalSubmit(e) {
 
   goalTextEl.textContent = `If you save ₹${monthly.toFixed(
     0
-  )} every month, you can afford "${name}" in about ${
-    monthsNeeded || 0
-  } month(s), around ${dateStr}.`;
+  )} per month, you can afford "${name}" in ${monthsNeeded} month(s) around ${dateStr}.`;
 
   const progressPct = Math.min(100, (savedAlready / cost) * 100);
   goalProgressEl.style.width = progressPct + "%";
@@ -341,9 +332,10 @@ function handleGoalSubmit(e) {
   goalResultEl.classList.remove("hidden");
 }
 
-// ====== SHARED EXPENSES & UPI ======
+// ====== SHARED EXPENSE ======
 function handleSettleSubmit(e) {
   e.preventDefault();
+
   const total = parseFloat(settleTotalInput.value || "0");
   const lines = settlePeopleInput.value
     .split("\n")
@@ -351,7 +343,7 @@ function handleSettleSubmit(e) {
     .filter(Boolean);
 
   if (!total || !lines.length) {
-    alert("Enter total amount and at least one person.");
+    alert("Enter total and people list.");
     return;
   }
 
@@ -365,12 +357,13 @@ function handleSettleSubmit(e) {
   });
 
   if (!people.length) {
-    alert("Could not parse people lines. Use 'Name, amountPaid'.");
+    alert("Invalid format. Use: Name, amountPaid");
     return;
   }
 
   const fairShare = total / people.length;
   const results = [];
+
   people.forEach((p) => {
     const diff = p.paid - fairShare;
     if (Math.abs(diff) < 1) {
@@ -383,12 +376,10 @@ function handleSettleSubmit(e) {
   });
 
   settleOutputEl.textContent =
-    `Fair share per person: ${formatCurrency(fairShare)}\n` +
-    results.join("\n") +
-    '\n\nUPI tip: Decide a receiver and generate a UPI link manually like:\nupi://pay?pa=receiver@upi&am=AMOUNT&tn=Room+settlement';
+    `Fair share: ${formatCurrency(fairShare)}\n` + results.join("\n");
 }
 
-// ====== BILL SPLITTER BY ITEM ======
+// ====== BILL SPLITTER ======
 function renderItems() {
   itemListEl.innerHTML = "";
   itemsForSplit.forEach((item) => {
@@ -402,6 +393,7 @@ function renderItems() {
 
 function handleItemSubmit(e) {
   e.preventDefault();
+
   const name = itemNameInput.value.trim();
   const price = parseFloat(itemPriceInput.value || "0");
   const peopleStr = itemPeopleInput.value.trim();
@@ -412,6 +404,7 @@ function handleItemSubmit(e) {
   }
 
   const people = peopleStr.split(",").map((p) => p.trim()).filter(Boolean);
+
   if (!people.length) {
     alert("Enter at least one person.");
     return;
@@ -453,7 +446,7 @@ function initChallenges() {
       {
         id: "no-swiggy-week",
         title: "No Swiggy Week",
-        description: "Avoid food delivery for 7 days straight.",
+        description: "Avoid food delivery for 7 days.",
         completedDays: 0,
         totalDays: 7,
       },
@@ -502,28 +495,28 @@ function renderChallenges() {
   });
 }
 
-// ====== RECEIPT (Camera + AI stub) ======
+// ====== RECEIPT PROTOTYPE ======
 function handleReceiptChange() {
   const file = receiptInput.files[0];
   if (!file) {
     receiptStatus.textContent = "";
     return;
   }
-  receiptStatus.textContent = `Selected: ${file.name}. In a real version, this would be sent to an OCR/AI service to auto-fill items, taxes, and store details.`;
+  receiptStatus.textContent = `Selected: ${file.name}. In a real version, AI would read the bill and auto-fill.`;
 }
 
 function explainReceiptFeature() {
   alert(
-    "Idea: You click a casual photo of a bill (even handwritten), then an AI service reads the text (items, prices, taxes) and auto-fills the expense form. This simple version only accepts the photo and shows a message, but the UI is ready to connect to an OCR API later."
+    "Idea: take a casual photo of a bill and an AI service extracts items, prices, taxes and categorizes automatically."
   );
 }
 
-// ====== VOICE INPUT ======
+// ====== ✅ FIXED VOICE INPUT ======
 function startVoiceLogging() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert("Voice recognition is not supported in this browser.");
+    alert("Your browser does not support voice input.");
     return;
   }
 
@@ -533,7 +526,6 @@ function startVoiceLogging() {
   recognition.maxAlternatives = 1;
 
   recognition.start();
-
   voiceAddBtn.textContent = "🎤 Listening…";
   voiceAddBtn.disabled = true;
 
@@ -545,47 +537,49 @@ function startVoiceLogging() {
   };
 
   recognition.onerror = () => {
-    alert("Voice recognition error. Try again.");
+    alert("Voice error. Try again.");
     voiceAddBtn.textContent = "🎤 Voice Add";
     voiceAddBtn.disabled = false;
   };
 }
 
 function parseVoiceExpense(text) {
-  // Examples:
-  // "spent 120 on milk and bread"
-  // "salary credited 15000"
-  // "received 2000 as pocket money"
-
   const lower = text.toLowerCase();
 
-  // 1️⃣ Detect amount
-  const amountMatch = lower.match(/(\d+(\.\d+)?)/);
+  // ✅ Improved number detection: supports 50000 / 50,000 / 50 000
+  const amountMatch = lower.match(/(\d[\d,\s]*\.?\d*)/);
   if (!amountMatch) {
-    alert("Could not detect an amount in what you said.");
+    alert("Could not detect an amount.");
     return;
   }
-  const amount = parseFloat(amountMatch[1]);
 
-  // 2️⃣ Detect type: income or expense
-  let detectedType = "expense"; // default
+  const rawAmount = amountMatch[1].replace(/[,\s]/g, "");
+  const amount = parseFloat(rawAmount);
 
-  // Words that mean INCOME
+  if (isNaN(amount) || amount <= 0) {
+    alert("Amount not understood.");
+    return;
+  }
+
+  // ✅ Detect INCOME vs EXPENSE
+  let detectedType = "expense";
+
   if (
-    /salary|credited|income|got|received|allowance|pocket money|stipend/.test(lower)
+    /salary|credited|income|received|got|allowance|stipend|pocket money/.test(
+      lower
+    )
   ) {
     detectedType = "income";
   }
 
-  // Words that clearly mean EXPENSE
-  if (/spent|paid|bought|recharge|recharged|gave/.test(lower)) {
+  if (/spent|paid|bought|recharged|recharge|gave/.test(lower)) {
     detectedType = "expense";
   }
 
-  // 3️⃣ Build description
+  // ✅ Build description
   let description = "Voice transaction";
-
   const afterOn = lower.split("on")[1];
+
   if (afterOn && afterOn.trim().length > 0) {
     description = afterOn.trim();
   } else if (detectedType === "income" && /salary/.test(lower)) {
@@ -596,29 +590,28 @@ function parseVoiceExpense(text) {
     description = "Expense";
   }
 
-  // 4️⃣ Fill the form
+  // ✅ Fill form
   typeInput.value = detectedType;
   amountInput.value = amount;
   descriptionInput.value = description;
   noteInput.value = "[Logged via voice] " + text;
 
   alert(
-    `Voice recognised as ${detectedType.toUpperCase()} of ₹${amount.toFixed(
+    `Detected ${detectedType.toUpperCase()} of ₹${amount.toFixed(
       2
-    )}. Please review and press Add.`
+    )}. Review and press Add ✅`
   );
 }
 
-// ====== THEME (placeholder) ======
+// ====== THEME ======
 function toggleTheme() {
-  alert(
-    "Theme toggle placeholder. You can extend this by switching CSS variables for a light mode."
-  );
+  alert("Theme toggle placeholder – can be extended.");
 }
 
 // ====== EVENT HANDLERS ======
 function handleAddTransaction(e) {
   e.preventDefault();
+
   const type = typeInput.value;
   const desc = descriptionInput.value.trim();
   const amount = parseFloat(amountInput.value);
@@ -626,7 +619,7 @@ function handleAddTransaction(e) {
   const note = noteInput.value.trim();
 
   if (!desc || isNaN(amount) || amount <= 0) {
-    alert("Please enter description and an amount > 0.");
+    alert("Enter valid description and amount.");
     return;
   }
 
@@ -650,7 +643,6 @@ function handleAddTransaction(e) {
   categoryInput.value = "Food - Home Cooking";
 }
 
-// Upcoming add
 function handleUpcomingSubmit(e) {
   e.preventDefault();
   const name = upcomingNameInput.value.trim();
@@ -658,7 +650,7 @@ function handleUpcomingSubmit(e) {
   const date = upcomingDateInput.value;
 
   if (!name || !amount || !date) {
-    alert("Enter name, amount and date for upcoming expense.");
+    alert("Enter name, amount and date.");
     return;
   }
 
@@ -668,7 +660,6 @@ function handleUpcomingSubmit(e) {
   upcomingForm.reset();
 }
 
-// Filters
 function handleFilterChange() {
   filterType = filterTypeSelect.value;
   filterCategory = filterCategorySelect.value;
@@ -685,7 +676,6 @@ function init() {
   renderChallenges();
   renderItems();
 
-  // Listeners
   form.addEventListener("submit", handleAddTransaction);
   filterTypeSelect.addEventListener("change", handleFilterChange);
   filterCategorySelect.addEventListener("change", handleFilterChange);
