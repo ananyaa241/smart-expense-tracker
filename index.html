@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Expense Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="logo-title">
+        <span class="logo-dot"></span>
+        <div>
+          <h1>Smart Expense Tracker</h1>
+          <p>Insights, goals, and smarter spending in one place.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="voice-add-btn" class="btn-outline" title="Voice expense logging">
+          🎤 Voice Add
+        </button>
+        <button id="theme-toggle" class="btn-icon" title="Toggle theme">
+          🌓
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- LEFT COLUMN: DASHBOARD + TRANSACTIONS -->
+      <section class="column main-column">
+        <!-- SUMMARY -->
+        <section class="card summary-section">
+          <div class="summary-main">
+            <h2>Overview</h2>
+            <p class="subtitle">Track your money at a glance.</p>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <span class="label">Balance</span>
+              <span id="balance" class="value">₹0.00</span>
+            </div>
+            <div class="summary-card positive">
+              <span class="label">Total Income</span>
+              <span id="total-income" class="value">₹0.00</span>
+            </div>
+            <div class="summary-card negative">
+              <span class="label">Total Expense</span>
+              <span id="total-expense" class="value">₹0.00</span>
+            </div>
+            <div class="summary-card info">
+              <span class="label">Survival Days (est.)</span>
+              <span id="survival-days" class="value">–</span>
+              <span id="survival-note" class="tiny"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADD TRANSACTION -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Add Transaction</h2>
+            <small>Log your income and expenses quickly.</small>
+          </div>
+          <form id="transaction-form" class="form-grid">
+            <div class="form-group">
+              <label for="type">Type</label>
+              <select id="type" required>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <input
+                type="text"
+                id="description"
+                placeholder="e.g. Salary, Swiggy, Petrol"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Amount (₹)</label>
+              <input type="number" id="amount" step="0.01" min="0.01" required />
+            </div>
+
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select id="category" required>
+                <option value="Salary">Salary</option>
+                <option value="Food - Home Cooking">Food - Home Cooking</option>
+                <option value="Food - Delivery">Food - Delivery</option>
+                <option value="Transport - Public">Transport - Public</option>
+                <option value="Transport - Cab/Auto">Transport - Cab/Auto</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Education">Education</option>
+                <option value="Health">Health</option>
+                <option value="Travel - Flight">Travel - Flight</option>
+                <option value="Travel - Train/Bus">Travel - Train/Bus</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="note">Note (optional)</label>
+              <input type="text" id="note" placeholder="Short note for yourself" />
+            </div>
+
+            <button type="submit" class="btn-primary full-width">Add</button>
+          </form>
+
+          <!-- Receipt input (prototype) -->
+          <div class="inline-section">
+            <label class="small-label">Receipt-free capture (prototype)</label>
+            <div class="inline-actions">
+              <input type="file" id="receipt-input" accept="image/*" />
+              <button id="receipt-help" class="btn-soft" type="button">
+                What this will do?
+              </button>
+            </div>
+            <p id="receipt-status" class="tiny muted"></p>
+          </div>
+        </section>
+
+        <!-- FILTERS -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Filter Transactions</h2>
+          </div>
+          <div class="filters-row">
+            <div class="form-group">
+              <label for="filter-type">Type</label>
+              <select id="filter-type">
+                <option value="all">All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="filter-category">Category</label>
+              <select id="filter-category">
+                <option value="all">All</option>
+                <option value="Salary">Salary</option>
+                <option value="Food - Home Cooking">Food - Home Cooking</option>
+                <option value="Food - Delivery">Food - Delivery</option>
+                <option value="Transport - Public">Transport - Public</option>
+                <option value="Transport - Cab/Auto">Transport - Cab/Auto</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Education">Education</option>
+                <option value="Health">Health</option>
+                <option value="Travel - Flight">Travel - Flight</option>
+                <option value="Travel - Train/Bus">Travel - Train/Bus</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRANSACTIONS LIST -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Transactions</h2>
+          </div>
+          <ul id="transaction-list" class="transaction-list">
+            <!-- JS injects items -->
+          </ul>
+        </section>
+      </section>
+
+      <!-- RIGHT COLUMN: INSIGHTS + TOOLS -->
+      <section class="column side-column">
+        <!-- SUSTAINABILITY INSIGHTS -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Sustainability Insights</h2>
+          </div>
+          <p class="tiny muted">
+            Based on your categories (delivery vs cooking, public transport vs cabs, flights vs trains).
+          </p>
+
+          <div class="insights-block">
+            <div class="score-row">
+              <div class="score-circle">
+                <span id="sustain-score">–</span>
+              </div>
+              <p id="sustain-text" class="tiny">
+                Cook at home, and use public transport more to improve this score.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- FUTURE PREDICTION + UPCOMING -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Future Expenses & Survival</h2>
+          </div>
+          <p class="tiny muted">
+            Estimated survival days are based on your last 30 days of spending.
+          </p>
+
+          <div class="insights-block">
+            <h3>Upcoming Expenses</h3>
+            <form id="upcoming-form" class="inline-form">
+              <input type="text" id="upcoming-name" placeholder="e.g. Diwali shopping" />
+              <input type="number" id="upcoming-amount" placeholder="Amount" min="0" step="0.01" />
+              <input type="date" id="upcoming-date" />
+              <button type="submit" class="btn-soft">Add</button>
+            </form>
+            <ul id="upcoming-list" class="pill-list"></ul>
+          </div>
+        </section>
+
+        <!-- TIME-TO-AFFORD -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Time-to-Afford Calculator</h2>
+          </div>
+
+          <form id="goal-form" class="stacked-form">
+            <input type="text" id="goal-name" placeholder="Dream item (e.g. MacBook)" />
+            <input type="number" id="goal-cost" placeholder="Cost (₹)" min="0" step="0.01" />
+            <input type="number" id="goal-monthly" placeholder="Monthly saving (₹)" min="0" step="0.01" />
+            <input type="number" id="goal-saved" placeholder="Already saved (₹)" min="0" step="0.01" />
+            <button type="submit" class="btn-primary full-width">Calculate Plan</button>
+          </form>
+
+          <div id="goal-result" class="goal-result hidden">
+            <p id="goal-text"></p>
+            <div class="progress-bar">
+              <div id="goal-progress" class="progress-fill"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SHARED EXPENSES & BILL SPLITTER -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Shared Expenses & UPI</h2>
+          </div>
+
+          <details class="accordion" open>
+            <summary>Auto-Settlement (simple)</summary>
+            <form id="settle-form" class="stacked-form">
+              <input
+                type="number"
+                id="settle-total"
+                placeholder="Total bill amount (₹)"
+                min="0"
+                step="0.01"
+              />
+              <textarea
+                id="settle-people"
+                rows="3"
+                placeholder="Enter as: Name, amountPaid (one per line)
+e.g.
+Ananya, 300
+Riya, 200
+Teja, 0"
+              ></textarea>
+              <button type="submit" class="btn-soft full-width">Calculate Settlement</button>
+            </form>
+            <pre id="settle-output" class="tiny code-block"></pre>
+          </details>
+
+          <details class="accordion">
+            <summary>Bill Splitter by Item</summary>
+            <div class="stacked-form">
+              <form id="item-form" class="inline-form">
+                <input type="text" id="item-name" placeholder="Item name" />
+                <input type="number" id="item-price" placeholder="Price" min="0" step="0.01" />
+                <input
+                  type="text"
+                  id="item-people"
+                  placeholder="People (comma separated)"
+                />
+                <button type="submit" class="btn-soft">Add</button>
+              </form>
+              <ul id="item-list" class="pill-list"></ul>
+              <button id="split-items-btn" class="btn-primary full-width" type="button">
+                Calculate per person
+              </button>
+              <pre id="item-split-output" class="tiny code-block"></pre>
+            </div>
+          </details>
+        </section>
+
+        <!-- SAVING CHALLENGES ONLY -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Saving Challenges</h2>
+          </div>
+
+          <div class="insights-block">
+            <h3>Challenges</h3>
+            <ul id="challenge-list" class="challenge-list"></ul>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
