@@ -552,23 +552,61 @@ function startVoiceLogging() {
 }
 
 function parseVoiceExpense(text) {
-  // Simple pattern: "spent 120 on milk and bread"
+  // Examples:
+  // "spent 120 on milk and bread"
+  // "salary credited 15000"
+  // "received 2000 as pocket money"
+
   const lower = text.toLowerCase();
+
+  // 1️⃣ Detect amount
   const amountMatch = lower.match(/(\d+(\.\d+)?)/);
   if (!amountMatch) {
     alert("Could not detect an amount in what you said.");
     return;
   }
-
   const amount = parseFloat(amountMatch[1]);
-  const descPart = lower.split("on")[1] || "Voice expense";
-  const description = descPart.trim();
 
-  typeInput.value = "expense";
+  // 2️⃣ Detect type: income or expense
+  let detectedType = "expense"; // default
+
+  // Words that mean INCOME
+  if (
+    /salary|credited|income|got|received|allowance|pocket money|stipend/.test(lower)
+  ) {
+    detectedType = "income";
+  }
+
+  // Words that clearly mean EXPENSE
+  if (/spent|paid|bought|recharge|recharged|gave/.test(lower)) {
+    detectedType = "expense";
+  }
+
+  // 3️⃣ Build description
+  let description = "Voice transaction";
+
+  const afterOn = lower.split("on")[1];
+  if (afterOn && afterOn.trim().length > 0) {
+    description = afterOn.trim();
+  } else if (detectedType === "income" && /salary/.test(lower)) {
+    description = "Salary";
+  } else if (detectedType === "income") {
+    description = "Income";
+  } else {
+    description = "Expense";
+  }
+
+  // 4️⃣ Fill the form
+  typeInput.value = detectedType;
   amountInput.value = amount;
   descriptionInput.value = description;
   noteInput.value = "[Logged via voice] " + text;
-  alert("Voice recognised. You can review and tap Add.");
+
+  alert(
+    `Voice recognised as ${detectedType.toUpperCase()} of ₹${amount.toFixed(
+      2
+    )}. Please review and press Add.`
+  );
 }
 
 // ====== THEME (placeholder) ======
